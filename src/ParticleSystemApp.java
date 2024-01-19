@@ -1,8 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 public class ParticleSystemApp extends JFrame {
 
+    // GUI attributes
     private JPanel particlePanel;
     private JPanel inputPanel;
     private JTextField xField, yField, thetaField, velocityField;
@@ -11,6 +13,7 @@ public class ParticleSystemApp extends JFrame {
 
     private JLabel fpsLabel;
 
+    private ArrayList<Particle> particleList = new ArrayList<Particle>();
     public ParticleSystemApp() {
         setTitle("Particle System App");
         setSize(1440, 1080); // The window itself
@@ -22,6 +25,12 @@ public class ParticleSystemApp extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
+
+                // Draw particles
+                for (Particle particle : particleList){
+                    particle.draw(g);
+                }
+
                 // Update FPS label position dynamically
                 fpsLabel.setBounds(getWidth() - 110, getHeight() - 30, 100, 20);
             }
@@ -69,6 +78,12 @@ public class ParticleSystemApp extends JFrame {
 
         // Start a thread to update FPS
         new Thread(this::runFPSCounter).start();
+
+        // Particle initialization
+        // test particles
+        particleList.add(new Particle(100, 100));
+        particleList.add(new Particle(150, 150));
+
     }
 
     private void runFPSCounter() {
