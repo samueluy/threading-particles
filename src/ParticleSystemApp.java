@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 public class ParticleSystemApp extends JFrame {
 
+    private final Object particleListLock = new Object();
+
     // GUI attributes
     private JPanel particlePanel;
     private JPanel inputPanel;
@@ -76,41 +78,57 @@ public class ParticleSystemApp extends JFrame {
         particlePanel.setLayout(null); // Use null layout to manually position components
         particlePanel.add(fpsLabel);
 
-        // Start a thread to update FPS
-        new Thread(this::runFPSCounter).start();
+
 
         // Particle initialization
         // test particles
-        particleList.add(new Particle(100, 100));
-        particleList.add(new Particle(150, 150));
+        particleList.add(new Particle(100, 100, 5, 45));
+        particleList.add(new Particle(150, 150, 8, 50));
+
+        // Start a thread to update FPS
+        new Thread(this::runFPSCounter).start();
+        // Start gamelogic thread
+        new Thread(this::gameLoop).start();
 
     }
 
-    private void runFPSCounter() {
+    private void gameLoop() {
         long lastTime = System.nanoTime();
-        double nsPerTick = 1000000000D / 60D; // 60 ticks per second
+        double nsPerUpdate = 1000000000D / 60D; // 60 updates per second
 
-        int frames = 0;
-        long lastTimer = System.currentTimeMillis();
         double delta = 0;
 
         while (true) {
             long now = System.nanoTime();
-            delta += (now - lastTime) / nsPerTick;
+            delta += (now - lastTime) / nsPerUpdate;
             lastTime = now;
 
-            boolean shouldRender = false;
-
             while (delta >= 1) {
-                // Update logic here (if any)
+                synchronized (particleListLock) {
+                    // Update particle positions
+                    for (Particle particle : particleList) {
+                        particle.update();
+                    }
+                }
                 delta -= 1;
-                shouldRender = true;
             }
 
-            if (shouldRender) {
-                frames++;
-                // Render logic here (update your particle system)
+            SwingUtilities.invokeLater(particlePanel::repaint);
+
+            try {
+                Thread.sleep(2);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+        }
+    }
+
+    private void runFPSCounter() {
+        int frames = 0;
+        long lastTimer = System.currentTimeMillis();
+
+        while (true) {
+            frames++;
 
             if (System.currentTimeMillis() - lastTimer >= 1000) {
                 lastTimer += 1000;

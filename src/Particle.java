@@ -5,11 +5,22 @@ public class Particle {
     private final int size = 5;
     private int x, y; // coordinates
 
+    private double velocity;
+    private double theta;
+
     private static final Random random = new Random(); // for generating random color
 
-    public Particle(int x, int y){
+    public Particle(int x, int y, double velocity, double theta){
         this.x = x;
         this.y = y;
+        this.velocity = velocity;
+        this.theta = theta;
+    }
+
+    public void update() {
+        // Update position based on velocity and direction
+        x += velocity * Math.cos(theta);
+        y += velocity * Math.sin(theta);
     }
 
     public void draw (Graphics g){
