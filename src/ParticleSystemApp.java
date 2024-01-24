@@ -18,6 +18,7 @@ public class ParticleSystemApp extends JFrame {
     private JLabel fpsLabel;
 
     private ArrayList<Particle> particleList = new ArrayList<Particle>();
+    private ArrayList<Wall> wallList = new ArrayList<>();
     public ParticleSystemApp() {
         setTitle("Particle System App");
         setSize(1080, 720); // The window itself
@@ -35,6 +36,11 @@ public class ParticleSystemApp extends JFrame {
                 // Draw particles
                 for (Particle particle : particleList){
                     particle.draw(g);
+                }
+
+                // Draw walls
+                for (Wall wall : wallList){
+                    wall.draw(g);
                 }
 
                 // Update FPS label position dynamically
@@ -98,6 +104,33 @@ public class ParticleSystemApp extends JFrame {
                 // Create and add particle
                 synchronized (particleListLock) {
                     particleList.add(new Particle(x, y, velocity, theta));
+                }
+
+                // Update particle system
+                particlePanel.repaint();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Invalid input format!");
+            }
+        });
+
+        // Wall handling
+        submitWallButton.addActionListener(e -> {
+            try {
+                int x1 = Integer.parseInt(x1Field.getText());
+                int y1 = Integer.parseInt(y1Field.getText());
+                int x2 = Integer.parseInt(x2Field.getText());
+                int y2 = Integer.parseInt(y2Field.getText());
+
+                // Validate inputs (e.g., check if coordinates are within the window bounds)
+                if (x1 < 0 || x1 > particlePanel.getWidth() || y1 < 0 || y1 > particlePanel.getHeight() ||
+                        x2 < 0 || x2 > particlePanel.getWidth() || y2 < 0 || y2 > particlePanel.getHeight()) {
+                    JOptionPane.showMessageDialog(this, "Invalid wall coordinates!");
+                    return;
+                }
+
+                // Create and add wall
+                synchronized (particleListLock) {
+                    wallList.add(new Wall(x1, y1, x2, y2));
                 }
 
                 // Update particle system
