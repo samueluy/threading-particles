@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
+// TODO:
+
 public class ParticleSystemApp extends JFrame {
 
     private final Object particleListLock = new Object();
@@ -70,6 +72,40 @@ public class ParticleSystemApp extends JFrame {
         addToInputPanel("Wall Y2:", y2Field);
         inputPanel.add(submitParticleButton);
         inputPanel.add(submitWallButton);
+
+        // Particle button inputs
+        submitParticleButton.addActionListener(e -> {
+            try {
+                int x = Integer.parseInt(xField.getText());
+                int y = Integer.parseInt(yField.getText());
+                double theta = Double.parseDouble(thetaField.getText());
+                double velocity = Double.parseDouble(velocityField.getText());
+
+                // Validate inputs (e.g., check if coordinates are within the window bounds)
+                if (x < 0 || x > particlePanel.getWidth() || y < 0 || y > particlePanel.getHeight()) {
+                    JOptionPane.showMessageDialog(this, "Invalid coordinates!");
+                    return;
+                }
+                if (theta < 0 || theta > 360) {
+                    JOptionPane.showMessageDialog(this, "Theta must be between 0 and 360 degrees!");
+                    return;
+                }
+                if (velocity < 0) {
+                    JOptionPane.showMessageDialog(this, "Velocity must be non-negative!");
+                    return;
+                }
+
+                // Create and add particle
+                synchronized (particleListLock) {
+                    particleList.add(new Particle(x, y, velocity, theta));
+                }
+
+                // Update particle system
+                particlePanel.repaint();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Invalid input format!");
+            }
+        });
 
         add(inputPanel, BorderLayout.EAST);
 
