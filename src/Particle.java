@@ -3,7 +3,10 @@ import java.util.Random;
 
 public class Particle {
     private final int size = 5;
+
     private int x, y; // coordinates
+
+    private Color color;
 
     private double velocity;
     private double theta;
@@ -19,6 +22,7 @@ public class Particle {
         this.y = y;
         this.velocity = velocity;
         this.theta = Math.toRadians(theta);
+        this.color = getRandomLightColor();
     }
 
     public void update() {
@@ -38,7 +42,7 @@ public class Particle {
     }
 
     public void draw (Graphics g){
-        g.setColor(getRandomLightColor());
+        g.setColor(color);
         g.fillRect(x, y, size, size);
     }
 

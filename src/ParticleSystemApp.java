@@ -152,9 +152,13 @@ public class ParticleSystemApp extends JFrame {
 
 
         // Particle initialization
+
         // test particles
         particleList.add(new Particle(100, 100, 5, 45));
         particleList.add(new Particle(150, 150, 8, 50));
+
+        // testwalls
+        wallList.add(new Wall(40, 150, 100, 20));
 
         // Start a thread to update FPS
         new Thread(this::runFPSCounter).start();
