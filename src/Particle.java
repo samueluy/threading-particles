@@ -1,4 +1,5 @@
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class Particle {
@@ -12,8 +13,8 @@ public class Particle {
     private double theta;
 
     // Screen size for boundary detection
-    private static final int SCREEN_WIDTH = 680;
-    private static final int SCREEN_HEIGHT = 700;
+    private static final int SCREEN_WIDTH = 1280;
+    private static final int SCREEN_HEIGHT = 720;
 
     private static final Random random = new Random(); // for generating random color
 
@@ -25,12 +26,31 @@ public class Particle {
         this.color = getRandomLightColor();
     }
 
-    public void update() {
+    public void update(ArrayList<Wall> walls) {
         // Update position based on velocity and direction
         x += velocity * Math.cos(theta);
         y += velocity * Math.sin(theta);
 
         // Collision detection and response
+        for (Wall wall : walls) {
+            if (wall.intersects(x, y, size, size)) {
+                // Calculate the angle of reflection
+                double wallAngle = Math.atan2(wall.getY2() - wall.getY1(), wall.getX2() - wall.getX1());
+                double angleOfIncidence = Math.atan2(y - (wall.getY1() + wall.getY2()) / 2, x - (wall.getX1() + wall.getX2()) / 2);
+                double angleOfReflection = 2 * wallAngle - angleOfIncidence;
+
+                // Update particle direction
+                theta = angleOfReflection;
+
+                // Move particle to avoid overlapping with the wall
+                double distanceToMove = Math.min(Math.abs((x - wall.getX1()) / Math.cos(angleOfReflection)),
+                        Math.abs((y - wall.getY1()) / Math.sin(angleOfReflection)));
+                x += distanceToMove * Math.cos(angleOfReflection);
+                y += distanceToMove * Math.sin(angleOfReflection);
+            }
+        }
+
+        // For screen bounds
         if (x <= 0 || x >= SCREEN_WIDTH) {
             theta = Math.PI - theta; // Reflect horizontally
             x = Math.max(0, Math.min(x, SCREEN_WIDTH)); // Keep within bounds
@@ -43,7 +63,7 @@ public class Particle {
 
     public void draw (Graphics g){
         g.setColor(color);
-        g.fillRect(x, y, size, size);
+        g.fillRect(x, SCREEN_HEIGHT - y, size, size);
     }
 
     public static Color getRandomLightColor(){

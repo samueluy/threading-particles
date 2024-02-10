@@ -21,9 +21,10 @@ public class ParticleSystemApp extends JFrame {
     private ArrayList<Wall> wallList = new ArrayList<>();
     public ParticleSystemApp() {
         setTitle("Particle System App");
-        setSize(1080, 720); // The window itself
+        setSize(1700, 760); // The window itself
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+        setResizable(false);
 
         getContentPane().setBackground(Color.GRAY); // Set the default window color
 
@@ -47,13 +48,13 @@ public class ParticleSystemApp extends JFrame {
                 fpsLabel.setBounds(getWidth() - 110, getHeight() - 30, 100, 20);
             }
         };
-        particlePanel.setPreferredSize(new Dimension(680, 720)); // Main -> width is - input panel width
+        particlePanel.setPreferredSize(new Dimension(1280, 720)); // Main -> width is - input panel width
         particlePanel.setBackground(Color.BLACK);
         add(particlePanel, BorderLayout.CENTER);
 
         // Input Panel
         inputPanel = new JPanel();
-        inputPanel.setPreferredSize(new Dimension(400, 720));
+        inputPanel.setPreferredSize(new Dimension(404, 720));
         inputPanel.setLayout(new GridLayout(10, 2));
 
         xField = new JTextField();
@@ -182,7 +183,7 @@ public class ParticleSystemApp extends JFrame {
                 synchronized (particleListLock) {
                     // Update particle positions
                     for (Particle particle : particleList) {
-                        particle.update();
+                        particle.update(wallList);
                     }
                 }
                 delta -= 1;
