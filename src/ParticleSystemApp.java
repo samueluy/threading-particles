@@ -104,7 +104,9 @@ public class ParticleSystemApp extends JFrame {
 
                 // Create and add particle
                 synchronized (particleListLock) {
-                    particleList.add(new Particle(x, y, velocity, theta));
+                    Particle particle = new Particle(x, y, velocity, theta, wallList);
+                    particleList.add(particle);
+                    particle.start();
                 }
 
                 // Update particle system
@@ -150,16 +152,20 @@ public class ParticleSystemApp extends JFrame {
         particlePanel.setLayout(null); // Use null layout to manually position components
         particlePanel.add(fpsLabel);
 
-
-
         // Particle initialization
 
         // test particles
-        particleList.add(new Particle(100, 100, 5, 45));
-        particleList.add(new Particle(150, 150, 8, 50));
+        Particle particle1 = new Particle(100, 100, 12, 0, wallList);
+        Particle particle2 = new Particle(150, 150, 8, 0, wallList);
+        particleList.add(particle1);
+        particleList.add(particle2);
+        particle1.start();
+        particle2.start();
+
 
         // testwalls
-        wallList.add(new Wall(40, 150, 100, 20));
+        //wallList.add(new Wall(200, 300, 700, 70));
+        wallList.add(new Wall(200, 700, 700, 70));
 
         // Start a thread to update FPS
         new Thread(this::runFPSCounter).start();
@@ -179,15 +185,15 @@ public class ParticleSystemApp extends JFrame {
             delta += (now - lastTime) / nsPerUpdate;
             lastTime = now;
 
-            while (delta >= 1) {
-                synchronized (particleListLock) {
-                    // Update particle positions
-                    for (Particle particle : particleList) {
-                        particle.update(wallList);
-                    }
-                }
-                delta -= 1;
-            }
+//            while (delta >= 1) {
+//                synchronized (particleListLock) {
+//                    // Update particle positions
+//                    for (Particle particle : particleList) {
+//                        //particle.update();
+//                    }
+//                }
+//                delta -= 1;
+//            }
 
             SwingUtilities.invokeLater(particlePanel::repaint);
 

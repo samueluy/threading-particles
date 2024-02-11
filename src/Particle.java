@@ -2,8 +2,10 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Particle {
+public class Particle extends Thread{
     private final int size = 5;
+
+    private ArrayList<Wall> walls = new ArrayList<>();
 
     private int x, y; // coordinates
 
@@ -18,35 +20,44 @@ public class Particle {
 
     private static final Random random = new Random(); // for generating random color
 
-    public Particle(int x, int y, double velocity, double theta){
+    public Particle(int x, int y, double velocity, double theta, ArrayList<Wall> walls){
         this.x = x;
         this.y = y;
         this.velocity = velocity;
         this.theta = Math.toRadians(theta);
         this.color = getRandomLightColor();
+        this.walls = walls;
     }
 
-    public void update(ArrayList<Wall> walls) {
+    public void run() {
+        while(true)
+        {
+            update();
+
+            try
+            {
+                Thread.sleep(20);
+            }
+            catch(Exception e){}
+        }
+    }
+
+
+    public void update() {
         // Update position based on velocity and direction
         x += velocity * Math.cos(theta);
         y += velocity * Math.sin(theta);
 
         // Collision detection and response
         for (Wall wall : walls) {
-            if (wall.intersects(x, y, size, size)) {
-                // Calculate the angle of reflection
-                double wallAngle = Math.atan2(wall.getY2() - wall.getY1(), wall.getX2() - wall.getX1());
-                double angleOfIncidence = Math.atan2(y - (wall.getY1() + wall.getY2()) / 2, x - (wall.getX1() + wall.getX2()) / 2);
-                double angleOfReflection = 2 * wallAngle - angleOfIncidence;
-
-                // Update particle direction
-                theta = angleOfReflection;
-
-                // Move particle to avoid overlapping with the wall
-                double distanceToMove = Math.min(Math.abs((x - wall.getX1()) / Math.cos(angleOfReflection)),
-                        Math.abs((y - wall.getY1()) / Math.sin(angleOfReflection)));
-                x += distanceToMove * Math.cos(angleOfReflection);
-                y += distanceToMove * Math.sin(angleOfReflection);
+            if (wall.intersects(x, y, size)) {
+                //System.out.println("INTERSECTS!");
+                checkInclineCollision(wall);
+                try {
+                    Thread.sleep(10); // Sleep for specified time
+                } catch (InterruptedException e) {
+                    e.printStackTrace(); // Handle interruption exception if needed
+                }
             }
         }
 
@@ -59,6 +70,34 @@ public class Particle {
             theta = -theta; // Reflect vertically
             y = Math.max(0, Math.min(y, SCREEN_HEIGHT)); // Keep within bounds
         }
+    }
+
+    void checkInclineCollision(Wall wall){
+        // (dx, dy) is relative position of ball with respect to wall midpoints
+        float dx = x - wall.getMidX();
+        float dy = y - wall.getMidY();
+
+        float cosine = (float) Math.cos(wall.getRotAngle());
+        float sine = (float) Math.sin(wall.getRotAngle());
+
+        // Rotate relative position and velocity
+        float dx_ = cosine * dx + sine * dy;
+        float dy_ = cosine * dy - sine * dx;
+
+
+        // Check for collision with both sides of the wall
+        if (Math.abs(dx_) < (wall.getWidth()) && y > wall.getY1() && y < wall.getY2()) {
+            dx_ = (float) (Math.signum(dx_) * (wall.getWidth() / 2));
+        }
+
+        // Rotate back to restore original coordinate axis
+        float dx_new = cosine * dx_ - sine * dy_;
+        float dy_new = cosine * dy_ + sine * dx_;
+
+        // Update particle properties
+        x = (int) (wall.getMidX() + dx_new);
+        y = (int) (wall.getMidY() + dy_new);
+        theta = 2 * wall.getRotAngle() - theta;
     }
 
     public void draw (Graphics g){
