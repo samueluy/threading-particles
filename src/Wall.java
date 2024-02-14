@@ -8,7 +8,7 @@ public class Wall{
 
     private float midX, midY; // Midpoint X and Y
     private final int CANVAS_HEIGHT = 720;
-    private final int CANVAS_WIDTH = 720;
+    private final int CANVAS_WIDTH = 1280;
 
     public Wall(int x1, int y1, int x2, int y2) {
         this.x1 = x1;
