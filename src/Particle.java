@@ -2,7 +2,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Particle implements Runnable {
+public class Particle {
     private final int size = 5;
 
     private ArrayList<Wall> walls = new ArrayList<>();
@@ -29,18 +29,18 @@ public class Particle implements Runnable {
         this.walls = walls;
     }
 
-    public void run() {
-        while(true)
-        {
-            update();
-
-            try
-            {
-                Thread.sleep(20);
-            }
-            catch(Exception e){}
-        }
-    }
+//    public void run() {
+//        while(true)
+//        {
+//            update();
+//
+//            try
+//            {
+//                Thread.sleep(20);
+//            }
+//            catch(Exception e){}
+//        }
+//    }
 
 
     public void update() {
@@ -100,10 +100,6 @@ public class Particle implements Runnable {
         theta = 2 * wall.getRotAngle() - theta;
     }
 
-    public void draw (Graphics g){
-        g.setColor(color);
-        g.fillRect(x, SCREEN_HEIGHT - y, size, size);
-    }
 
     public static Color getRandomLightColor(){
         int r = 128 + random.nextInt(128); // Red
@@ -111,5 +107,22 @@ public class Particle implements Runnable {
         int b = 128 + random.nextInt(128); // Blue
 
         return new Color(r, g, b);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void draw (Graphics g){
+        g.setColor(color);
+        g.fillRect(x, SCREEN_HEIGHT - y, size, size);
     }
 }
