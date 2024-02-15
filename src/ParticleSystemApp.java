@@ -19,6 +19,9 @@ public class ParticleSystemApp extends JFrame {
 
     private JLabel fpsLabel;
 
+    private final int MIN_VELOCITY = 3;
+    private final int MAX_VELOCITY = 30;
+
     private ArrayList<Particle> particleList = new ArrayList<Particle>();
     private ArrayList<Wall> wallList = new ArrayList<>();
     public ParticleSystemApp() {
@@ -214,11 +217,14 @@ public class ParticleSystemApp extends JFrame {
                                 JOptionPane.showMessageDialog(this, "Velocity must be non-negative!");
                                 return;
                             }
-                            if (velocity < 3) {
-                                JOptionPane.showMessageDialog(this, "Velocity will be adjusted to 3");
-                                velocity = 3;
+                            if (velocity < MIN_VELOCITY) {
+                                JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MIN_VELOCITY);
+                                velocity = MIN_VELOCITY;
                             }
-                            //TODO: (OPTIONAL) Add a max velocity
+                            if (velocity > MAX_VELOCITY) {
+                                JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MAX_VELOCITY);
+                                velocity = MAX_VELOCITY;
+                            }
 
                             addParticles(x, y, theta, velocity);
                         } catch (NumberFormatException ex) {
@@ -250,11 +256,14 @@ public class ParticleSystemApp extends JFrame {
                             JOptionPane.showMessageDialog(this, "Velocity must be non-negative!");
                             return;
                         }
-                        if (velocity < 3) {
-                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to 3");
-                            velocity = 3;
+                        if (velocity < MIN_VELOCITY) {
+                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MIN_VELOCITY);
+                            velocity = MIN_VELOCITY;
                         }
-                        //TODO: (OPTIONAL) Add a max velocity
+                        if (velocity > MAX_VELOCITY) {
+                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MAX_VELOCITY);
+                            velocity = MAX_VELOCITY;
+                        }
 
                         addParticlesWithConstantVelocityAndAngle(n, startX, endX, startY, endY, theta, velocity);
                         break;
@@ -280,11 +289,14 @@ public class ParticleSystemApp extends JFrame {
                             JOptionPane.showMessageDialog(this, "Velocity must be non-negative!");
                             return;
                         }
-                        if (velocity < 3) {
-                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to 3");
-                            velocity = 3;
+                        if (velocity < MIN_VELOCITY) {
+                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MIN_VELOCITY);
+                            velocity = MIN_VELOCITY;
                         }
-                        //TODO: (OPTIONAL) Add a max velocity
+                        if (velocity > MAX_VELOCITY) {
+                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MAX_VELOCITY);
+                            velocity = MAX_VELOCITY;
+                        }
 
                         addParticlesWithConstantStartPointAndAngle(n, x, y, velocity, startTheta, endTheta);
                         break;
@@ -309,11 +321,14 @@ public class ParticleSystemApp extends JFrame {
                             JOptionPane.showMessageDialog(this, "Velocity must be non-negative!");
                             return;
                         }
-                        if (startVelocity < 3 || endVelocity < 3) {
-                            JOptionPane.showMessageDialog(this, "Velocity must be atleast 3");
+                        if (startVelocity < MIN_VELOCITY || endVelocity < MIN_VELOCITY) {
+                            JOptionPane.showMessageDialog(this, "Minimum velocity should only be " + MIN_VELOCITY);
                             return;
                         }
-                        //TODO: (OPTIONAL) Add a max velocity
+                        if (startVelocity > MAX_VELOCITY || endVelocity > MAX_VELOCITY) {
+                            JOptionPane.showMessageDialog(this, "Maximum velocity should only be " + MAX_VELOCITY);
+                            return;
+                        }
 
                         addParticlesWithConstantStartPointAndVelocity(n, x, y, theta, startVelocity, endVelocity);
                         break;
@@ -425,25 +440,28 @@ public class ParticleSystemApp extends JFrame {
 
     private void runFPSCounter() {
         int frames = 0;
-        long lastUpdate = System.currentTimeMillis(); // Track the last update time
+        long lastTime = System.nanoTime(); // Use nanoTime for higher precision
+        double nsPerUpdate = 1000000000D / 60D; // 60 updates per second
 
         while (true) {
-            frames++;
-            long now = System.currentTimeMillis();
-            long elapsed = now - lastUpdate;
+            long now = System.nanoTime();
+            long elapsed = now - lastTime;
+            lastTime = now;
 
-            if (elapsed >= 500) { // 0.5 seconds
-                double seconds = elapsed / 1000.0; // Convert milliseconds
-                int fps = Math.min((int)(frames / seconds), 60); // Calculate FPS, capped at 60
+            frames++;
+
+            if (elapsed >= nsPerUpdate) {
+                double seconds = elapsed / 1000000000.0; // Convert nanoseconds to seconds
+                int fps = (int) (frames / seconds); // Calculate FPS
 
                 SwingUtilities.invokeLater(() -> fpsLabel.setText("FPS: " + fps));
 
-                lastUpdate = now;
-                frames = 0; // Reset frame count for the next interval
+                frames = 0; // Reset frame count
+                lastTime = System.nanoTime(); // Reset last update time
             }
 
             try {
-                Thread.sleep(1); // Short sleep
+                Thread.sleep(1); // Adjust sleep time as needed
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

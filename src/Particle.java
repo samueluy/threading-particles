@@ -50,7 +50,7 @@ public class Particle extends Thread{
 
         // Collision detection and response
         for (Wall wall : walls) {
-            if (wall.intersects(x, y, size)) {
+            if (wall.intersects(x, y, 7)) {
                 //System.out.println("INTERSECTS!");
                 checkInclineCollision(wall);
                 try {
