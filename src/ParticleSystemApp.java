@@ -1,12 +1,18 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Executors;
 // TODO:
 
 public class ParticleSystemApp extends JFrame {
 
     private final Object particleListLock = new Object();
+
+    private ExecutorService executor;
+
+    private LinkedBlockingQueue queue;
 
     // GUI attributes
     private JPanel particlePanel;
@@ -377,6 +383,8 @@ public class ParticleSystemApp extends JFrame {
         particlePanel.setLayout(null); // Use null layout to manually position components
         particlePanel.add(fpsLabel);
 
+        executor = Executors.newCachedThreadPool();
+
         // Particle initialization
 
         // test particles
@@ -388,23 +396,28 @@ public class ParticleSystemApp extends JFrame {
         particleList.add(particle2);
         particleList.add(particle3);
         particleList.add(particle4);
-        particle1.start();
-        particle2.start();
-        particle3.start();
-        particle4.start();
+//        particle1.start();
+//        particle2.start();
+//        particle3.start();
+//        particle4.start();
 
-
+        executor.submit(particle1);
+        executor.submit(particle2);
+        executor.submit(particle3);
+        executor.submit(particle4);
         // testwalls
         //wallList.add(new Wall(100, 700, 600, 100)); //Test angle facing bottom left and top right WORKING
-        //wallList.add(new Wall(600, 10, 1200, 700)); // Test angle facing bottom right and top left WORKING
+        wallList.add(new Wall(600, 10, 1200, 700)); // Test angle facing bottom right and top left WORKING
         //wallList.add(new Wall(600, 10, 600, 700)); //Straight vertical WORKING
-        wallList.add(new Wall(100, 300, 1000, 300)); //Straight horizontal WORKING
+        //wallList.add(new Wall(100, 300, 1000, 300)); //Straight horizontal WORKING
+
+        //queue = new LinkedBlockingQueue<>();
+
 
         // Start a thread to update FPS
         new Thread(this::runFPSCounter).start();
         // Start gamelogic thread
         new Thread(this::gameLoop).start();
-
     }
 
     private void gameLoop() {
@@ -486,7 +499,7 @@ public class ParticleSystemApp extends JFrame {
             synchronized (particleListLock) {
                 Particle particle = new Particle((int) Math.round(currentX), (int) Math.round(currentY), velocity, theta, wallList);
                 particleList.add(particle);
-                particle.start();
+                executor.submit(particle);
             }
             currentX += increment* unitVectorX;
             currentY += increment * unitVectorY;
@@ -505,7 +518,8 @@ public class ParticleSystemApp extends JFrame {
             synchronized (particleListLock) {
                 Particle particle = new Particle(startX, startY, velocity, incTheta, wallList);
                 particleList.add(particle);
-                particle.start();
+                //particle.start();
+                executor.submit(particle);
             }
             incTheta += dTheta;
         }
@@ -522,7 +536,8 @@ public class ParticleSystemApp extends JFrame {
             synchronized (particleListLock) {
                 Particle particle = new Particle(startX, startY, incVelo, theta, wallList);
                 particleList.add(particle);
-                particle.start();
+                //particle.start();
+                executor.submit(particle);
             }
             incVelo += dVelocity;
         }
@@ -544,7 +559,8 @@ public class ParticleSystemApp extends JFrame {
         synchronized (particleListLock) {
             Particle particle = new Particle(x, y, velocity, theta, wallList);
             particleList.add(particle);
-            particle.start();
+            //particle.start();
+            executor.submit(particle);
         }
 
         // Update particle system

@@ -2,7 +2,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Particle extends Thread{
+public class Particle implements Runnable {
     private final int size = 5;
 
     private ArrayList<Wall> walls = new ArrayList<>();
@@ -47,6 +47,8 @@ public class Particle extends Thread{
         // Update position based on velocity and direction
         x += velocity * Math.cos(theta);
         y += velocity * Math.sin(theta);
+
+
 
         // Collision detection and response
         for (Wall wall : walls) {
