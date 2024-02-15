@@ -416,25 +416,31 @@ public class ParticleSystemApp extends JFrame {
 
     private void runFPSCounter() {
         int frames = 0;
-        long lastTimer = System.currentTimeMillis();
+        long lastUpdate = System.currentTimeMillis(); // Track the last update time
 
         while (true) {
             frames++;
+            long now = System.currentTimeMillis();
+            long elapsed = now - lastUpdate;
 
-            if (System.currentTimeMillis() - lastTimer >= 1000) {
-                lastTimer += 1000;
-                int finalFrames = frames;
-                SwingUtilities.invokeLater(() -> fpsLabel.setText("FPS: " + finalFrames));
-                frames = 0;
+            if (elapsed >= 500) { // 0.5 seconds
+                double seconds = elapsed / 1000.0; // Convert milliseconds
+                int fps = Math.min((int)(frames / seconds), 60); // Calculate FPS, capped at 60
+
+                SwingUtilities.invokeLater(() -> fpsLabel.setText("FPS: " + fps));
+
+                lastUpdate = now;
+                frames = 0; // Reset frame count for the next interval
             }
 
             try {
-                Thread.sleep(2);
+                Thread.sleep(1); // Short sleep
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
     }
+
 
     // Helper methods for batch particle addition
     private void addParticlesWithConstantVelocityAndAngle(int n, int startX, int endX, int startY, int endY, double theta, double velocity) {
