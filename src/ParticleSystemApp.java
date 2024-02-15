@@ -1,18 +1,14 @@
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Executors;
+import java.util.Collections;
+import java.util.Comparator;
+
 // TODO:
 
 public class ParticleSystemApp extends JFrame {
 
     private final Object particleListLock = new Object();
-
-    private ExecutorService executor;
-
-    private LinkedBlockingQueue queue;
 
     // GUI attributes
     private JPanel particlePanel;
@@ -25,14 +21,13 @@ public class ParticleSystemApp extends JFrame {
 
     private JLabel fpsLabel;
 
-    private final int MIN_VELOCITY = 3;
-    private final int MAX_VELOCITY = 30;
-
-    private ArrayList<Particle> particleList = new ArrayList<Particle>();
+    private ArrayList<ParticleBatch> particleBatchList = new ArrayList<ParticleBatch>();
     private ArrayList<Wall> wallList = new ArrayList<>();
+
+    private final int MAX_LOAD = 20;
     public ParticleSystemApp() {
         setTitle("Particle System App");
-        setSize(1700, 760); // The window itself
+        setSize(1700, 790); // The window itself
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setResizable(false);
@@ -46,8 +41,12 @@ public class ParticleSystemApp extends JFrame {
                 super.paintComponent(g);
 
                 // Draw particles
-                for (Particle particle : particleList){
-                    particle.draw(g);
+
+                for (ParticleBatch batch: particleBatchList) {
+                    ArrayList<Particle> particleList = batch.getParticles();
+                    for (Particle particle : particleList) {
+                        particle.draw(g);
+                    }
                 }
 
                 // Draw walls
@@ -65,7 +64,7 @@ public class ParticleSystemApp extends JFrame {
 
         // Input Panel
         inputPanel = new JPanel();
-        inputPanel.setPreferredSize(new Dimension(404, 720));
+        inputPanel.setPreferredSize(new Dimension(404, 720)); // Main -> width is - input panel width
         inputPanel.setLayout(new GridLayout(13, 2));
 
 
@@ -223,14 +222,11 @@ public class ParticleSystemApp extends JFrame {
                                 JOptionPane.showMessageDialog(this, "Velocity must be non-negative!");
                                 return;
                             }
-                            if (velocity < MIN_VELOCITY) {
-                                JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MIN_VELOCITY);
-                                velocity = MIN_VELOCITY;
+                            if (velocity < 3) {
+                                JOptionPane.showMessageDialog(this, "Velocity will be adjusted to 3");
+                                velocity = 3;
                             }
-                            if (velocity > MAX_VELOCITY) {
-                                JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MAX_VELOCITY);
-                                velocity = MAX_VELOCITY;
-                            }
+                            //TODO: (OPTIONAL) Add a max velocity
 
                             addParticles(x, y, theta, velocity);
                         } catch (NumberFormatException ex) {
@@ -262,14 +258,11 @@ public class ParticleSystemApp extends JFrame {
                             JOptionPane.showMessageDialog(this, "Velocity must be non-negative!");
                             return;
                         }
-                        if (velocity < MIN_VELOCITY) {
-                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MIN_VELOCITY);
-                            velocity = MIN_VELOCITY;
+                        if (velocity < 3) {
+                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to 3");
+                            velocity = 3;
                         }
-                        if (velocity > MAX_VELOCITY) {
-                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MAX_VELOCITY);
-                            velocity = MAX_VELOCITY;
-                        }
+                        //TODO: (OPTIONAL) Add a max velocity
 
                         addParticlesWithConstantVelocityAndAngle(n, startX, endX, startY, endY, theta, velocity);
                         break;
@@ -295,14 +288,11 @@ public class ParticleSystemApp extends JFrame {
                             JOptionPane.showMessageDialog(this, "Velocity must be non-negative!");
                             return;
                         }
-                        if (velocity < MIN_VELOCITY) {
-                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MIN_VELOCITY);
-                            velocity = MIN_VELOCITY;
+                        if (velocity < 3) {
+                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to 3");
+                            velocity = 3;
                         }
-                        if (velocity > MAX_VELOCITY) {
-                            JOptionPane.showMessageDialog(this, "Velocity will be adjusted to " + MAX_VELOCITY);
-                            velocity = MAX_VELOCITY;
-                        }
+                        //TODO: (OPTIONAL) Add a max velocity
 
                         addParticlesWithConstantStartPointAndAngle(n, x, y, velocity, startTheta, endTheta);
                         break;
@@ -327,14 +317,11 @@ public class ParticleSystemApp extends JFrame {
                             JOptionPane.showMessageDialog(this, "Velocity must be non-negative!");
                             return;
                         }
-                        if (startVelocity < MIN_VELOCITY || endVelocity < MIN_VELOCITY) {
-                            JOptionPane.showMessageDialog(this, "Minimum velocity should only be " + MIN_VELOCITY);
+                        if (startVelocity < 3 || endVelocity < 3) {
+                            JOptionPane.showMessageDialog(this, "Velocity must be atleast 3");
                             return;
                         }
-                        if (startVelocity > MAX_VELOCITY || endVelocity > MAX_VELOCITY) {
-                            JOptionPane.showMessageDialog(this, "Maximum velocity should only be " + MAX_VELOCITY);
-                            return;
-                        }
+                        //TODO: (OPTIONAL) Add a max velocity
 
                         addParticlesWithConstantStartPointAndVelocity(n, x, y, theta, startVelocity, endVelocity);
                         break;
@@ -383,164 +370,372 @@ public class ParticleSystemApp extends JFrame {
         particlePanel.setLayout(null); // Use null layout to manually position components
         particlePanel.add(fpsLabel);
 
-        executor = Executors.newCachedThreadPool();
-
         // Particle initialization
 
         // test particles
-        Particle particle1 = new Particle(100, 100, 12, 0, wallList);
-        Particle particle2 = new Particle(400, 150, 8, 60, wallList);
-        Particle particle3 = new Particle(600, 150, 8, 45, wallList);
-        Particle particle4 = new Particle(1000, 100, 8, 80, wallList);
-        particleList.add(particle1);
-        particleList.add(particle2);
-        particleList.add(particle3);
-        particleList.add(particle4);
+//        Particle particle1 = new Particle(100, 100, 12, 0, wallList);
+//        Particle particle2 = new Particle(150, 150, 8, 0, wallList);
+//        particleList.add(particle1);
+//        particleList.add(particle2);
 //        particle1.start();
 //        particle2.start();
-//        particle3.start();
-//        particle4.start();
-
-        executor.submit(particle1);
-        executor.submit(particle2);
-        executor.submit(particle3);
-        executor.submit(particle4);
-        // testwalls
-        //wallList.add(new Wall(100, 700, 600, 100)); //Test angle facing bottom left and top right WORKING
-        wallList.add(new Wall(600, 10, 1200, 700)); // Test angle facing bottom right and top left WORKING
-        //wallList.add(new Wall(600, 10, 600, 700)); //Straight vertical WORKING
-        //wallList.add(new Wall(100, 300, 1000, 300)); //Straight horizontal WORKING
-
-        //queue = new LinkedBlockingQueue<>();
-
+//
+//
+//        // testwalls
+//        //wallList.add(new Wall(200, 300, 700, 70));
+        wallList.add(new Wall(100, 100, 500, 700));
+        wallList.add(new Wall(500, 700, 900, 100));
 
         // Start a thread to update FPS
         new Thread(this::runFPSCounter).start();
         // Start gamelogic thread
         new Thread(this::gameLoop).start();
+
     }
 
     private void gameLoop() {
-        long lastTime = System.nanoTime();
-        double nsPerUpdate = 1000000000D / 60D; // 60 updates per second
-
-        double delta = 0;
+        final double maxFramesPerSecond = 144.0;
+        final long frameTime = (long) (1000 / maxFramesPerSecond);
 
         while (true) {
-            long now = System.nanoTime();
-            delta += (now - lastTime) / nsPerUpdate;
-            lastTime = now;
+            long startTime = System.currentTimeMillis();
 
-//            while (delta >= 1) {
-//                synchronized (particleListLock) {
-//                    // Update particle positions
-//                    for (Particle particle : particleList) {
-//                        //particle.update();
-//                    }
-//                }
-//                delta -= 1;
-//            }
-
+            // Your game update and render logic here
             SwingUtilities.invokeLater(particlePanel::repaint);
 
-            try {
-                Thread.sleep(2);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            long endTime = System.currentTimeMillis();
+            long deltaTime = endTime - startTime;
+            long sleepTime = frameTime - deltaTime;
+
+            if (sleepTime > 0) {
+                try {
+                    Thread.sleep(sleepTime);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
             }
         }
     }
 
+
     private void runFPSCounter() {
+        long lastUpdateTime = System.currentTimeMillis();
         int frames = 0;
-        long lastTime = System.nanoTime(); // Use nanoTime for higher precision
-        double nsPerUpdate = 1000000000D / 60D; // 60 updates per second
 
         while (true) {
-            long now = System.nanoTime();
-            long elapsed = now - lastTime;
-            lastTime = now;
+            long now = System.currentTimeMillis();
+            long elapsed = now - lastUpdateTime;
 
             frames++;
 
-            if (elapsed >= nsPerUpdate) {
-                double seconds = elapsed / 1000000000.0; // Convert nanoseconds to seconds
-                int fps = (int) (frames / seconds); // Calculate FPS
+            if (elapsed >= 500) { // 0.5 seconds
+                final int fps = (int) ((frames * 1000) / elapsed);
+                SwingUtilities.invokeLater(() -> fpsLabel.setText("FPS: " + Math.min(fps, 144)));
 
-                SwingUtilities.invokeLater(() -> fpsLabel.setText("FPS: " + fps));
-
-                frames = 0; // Reset frame count
-                lastTime = System.nanoTime(); // Reset last update time
+                frames = 0;
+                lastUpdateTime = now;
             }
 
             try {
-                Thread.sleep(1); // Adjust sleep time as needed
+                Thread.sleep(Math.max(1, (1000 / 144) - (System.currentTimeMillis() - now)));
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
     }
 
-
     // Helper methods for batch particle addition
     private void addParticlesWithConstantVelocityAndAngle(int n, int startX, int endX, int startY, int endY, double theta, double velocity) {
-        //TODO: Change it to create a thread batch of particles
-
         double totalDistance = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
         double increment = totalDistance / (n - 1);
         double unitVectorX = (endX - startX) / totalDistance;
         double unitVectorY = (endY - startY) / totalDistance;
-
         // Add particles with uniform distance
         double currentX = startX;
         double currentY = startY;
 
-        for (int i = 0; i < n; i++) {
-            synchronized (particleListLock) {
-                Particle particle = new Particle((int) Math.round(currentX), (int) Math.round(currentY), velocity, theta, wallList);
-                particleList.add(particle);
-                executor.submit(particle);
+        ArrayList<Particle> pList = new ArrayList<>();
+        int remainingCount = n;
+
+
+        // Add particles to existing batches that are not full yet
+        for (ParticleBatch batch: particleBatchList) {
+            if (batch.isFull())
+                break;
+            else {
+                pList.clear(); // Clear list before adding particles
+                int numNeeded = MAX_LOAD - batch.getNumParticles(); // Number of particles to be added to this batch
+
+                // If the number of available space in batch is more than the remaining count to add, then add only what is remaining
+                if (numNeeded > remainingCount) {
+                    numNeeded = remainingCount;
+                    remainingCount = 0;
+                }
+                else
+                    remainingCount -= numNeeded; // Get the number of remaining
+
+                for (int i = 0; i < numNeeded; i++) {
+                    pList.add(new Particle((int) Math.round(currentX), (int) Math.round(currentY), velocity, theta, wallList));
+                    currentX += increment* unitVectorX;
+                    currentY += increment * unitVectorY;
+                }
+
+                // Add particles to current existing batch
+                synchronized (particleListLock) {
+                    batch.addNewParticles(pList);
+
+                    // TEMP PRINT TODO: REMOVE AFTER TEST
+                    System.out.println("ADDED to existing batch particle num: " + pList.size());
+                    // END TEMP PRINT
+                }
             }
-            currentX += increment* unitVectorX;
-            currentY += increment * unitVectorY;
         }
+
+        // Add the remaining count to new batches if there are still
+        while (remainingCount > 0) {
+            pList.clear(); // Clear list before adding particles
+
+            for (int i = 0; i < MAX_LOAD; i++) {
+                if (remainingCount > 0) {
+                    pList.add(new Particle((int) Math.round(currentX), (int) Math.round(currentY), velocity, theta, wallList));
+                    currentX += increment* unitVectorX;
+                    currentY += increment * unitVectorY;
+                    remainingCount--;
+                }
+                else
+                    break;
+            }
+
+            // Add a new batch
+            synchronized (particleListLock) {
+                ParticleBatch pb = new ParticleBatch(pList);
+                particleBatchList.add(pb);
+                pb.start();
+
+
+                // TEMP PRINT TODO: REMOVE AFTER TEST
+                System.out.println("ADDED NEW BATCH with particle num: " + pb.getNumParticles());
+                // END TEMP PRINT
+            }
+        }
+
+        // TEMP PRINT TODO: REMOVE AFTER TEST
+        System.out.println("THREAD NUM START");
+        for (ParticleBatch batch: particleBatchList)
+            System.out.println("Thread num: " + batch.getNumParticles());
+        System.out.println("THREAD NUM END");
+        // END TEMP PRINT
+
+        // Sort list
+        Collections.sort(particleBatchList, new ParticleBatchComparator());
 
         // Update particle system
         particlePanel.repaint();
     }
 
-    private void addParticlesWithConstantStartPointAndAngle(int n, int startX, int startY, double velocity, double startTheta, double endTheta) {
-        //TODO: Change it to create a thread batch of particles
+    private void addParticlesWithConstantStartPointAndAngle(int n, int x, int y, double velocity, double startTheta, double endTheta) {
         double dTheta = (endTheta - startTheta) / (double) n;
         double incTheta = startTheta;
+        ArrayList<Particle> pList = new ArrayList<>();
+        int remainingCount = n;
 
-        for (int i = 0; i < n; i++) {
-            synchronized (particleListLock) {
-                Particle particle = new Particle(startX, startY, velocity, incTheta, wallList);
-                particleList.add(particle);
-                //particle.start();
-                executor.submit(particle);
+
+        // Add particles to existing batches that are not full yet
+        for (ParticleBatch batch: particleBatchList) {
+            if (batch.isFull())
+                break;
+            else {
+                pList.clear(); // Clear list before adding particles
+                int numNeeded = MAX_LOAD - batch.getNumParticles(); // Number of particles to be added to this batch
+
+                // If the number of available space in batch is more than the remaining count to add, then add only what is remaining
+                if (numNeeded > remainingCount) {
+                    numNeeded = remainingCount;
+                    remainingCount = 0;
+                }
+                else
+                    remainingCount -= numNeeded; // Get the number of remaining
+
+                for (int i = 0; i < numNeeded; i++) {
+                    pList.add(new Particle(x, y, velocity, incTheta, wallList));
+                    incTheta += dTheta;
+                }
+
+                // Add particles to current existing batch
+                synchronized (particleListLock) {
+                    batch.addNewParticles(pList);
+
+                    // TEMP PRINT TODO: REMOVE AFTER TEST
+                    System.out.println("ADDED to existing batch particle num: " + pList.size());
+                    // END TEMP PRINT
+                }
             }
-            incTheta += dTheta;
         }
+
+        // Add the remaining count to new batches if there are still
+        while (remainingCount > 0) {
+            pList.clear(); // Clear list before adding particles
+
+            for (int i = 0; i < MAX_LOAD; i++) {
+                if (remainingCount > 0) {
+                    pList.add(new Particle(x, y, velocity, incTheta, wallList));
+                    incTheta += dTheta;
+                    remainingCount--;
+                }
+                else
+                    break;
+            }
+
+            // Add a new batch
+            synchronized (particleListLock) {
+                ParticleBatch pb = new ParticleBatch(pList);
+                particleBatchList.add(pb);
+                pb.start();
+
+
+                // TEMP PRINT TODO: REMOVE AFTER TEST
+                System.out.println("ADDED NEW BATCH with particle num: " + pb.getNumParticles());
+                // END TEMP PRINT
+            }
+        }
+
+        // TEMP PRINT TODO: REMOVE AFTER TEST
+        System.out.println("THREAD NUM START");
+        for (ParticleBatch batch: particleBatchList)
+            System.out.println("Thread num: " + batch.getNumParticles());
+        System.out.println("THREAD NUM END");
+        // END TEMP PRINT
+
+        // Sort list
+        Collections.sort(particleBatchList, new ParticleBatchComparator());
+
         // Update particle system
         particlePanel.repaint();
     }
 
-    private void addParticlesWithConstantStartPointAndVelocity(int n, int startX, int startY, double theta, double startVelocity, double endVelocity) {
-        //TODO: Change it to create a thread batch of particles
+    private void addParticlesWithConstantStartPointAndVelocity(int n, int x, int y, double theta, double startVelocity, double endVelocity) {
         double dVelocity = (endVelocity - startVelocity) / (double) n;
         double incVelo = startVelocity;
+        ArrayList<Particle> pList = new ArrayList<>();
+        int remainingCount = n;
 
-        for (int i = 0; i < n; i++) {
-            synchronized (particleListLock) {
-                Particle particle = new Particle(startX, startY, incVelo, theta, wallList);
-                particleList.add(particle);
-                //particle.start();
-                executor.submit(particle);
+        // Add particles to existing batches that are not full yet
+        for (ParticleBatch batch: particleBatchList) {
+            if (batch.isFull())
+                break;
+            else {
+                pList.clear(); // Clear list before adding particles
+                int numNeeded = MAX_LOAD - batch.getNumParticles(); // Number of particles to be added to this batch
+
+                // If the number of available space in batch is more than the remaining count to add, then add only what is remaining
+                if (numNeeded > remainingCount) {
+                    numNeeded = remainingCount;
+                    remainingCount = 0;
+                }
+                else
+                    remainingCount -= numNeeded; // Get the number of remaining
+
+                for (int i = 0; i < numNeeded; i++) {
+                    pList.add(new Particle(x, y, incVelo, theta, wallList));
+                    incVelo += dVelocity;
+                }
+
+                // Add particles to current existing batch
+                synchronized (particleListLock) {
+                    batch.addNewParticles(pList);
+
+                    // TEMP PRINT TODO: REMOVE AFTER TEST
+                    System.out.println("ADDED to existing batch particle num: " + pList.size());
+                    // END TEMP PRINT
+                }
             }
-            incVelo += dVelocity;
         }
+
+        // Add the remaining count to new batches if there are still
+        while (remainingCount > 0) {
+            pList.clear(); // Clear list before adding particles
+
+            for (int i = 0; i < MAX_LOAD; i++) {
+                if (remainingCount > 0) {
+                    pList.add(new Particle(x, y, incVelo, theta, wallList));
+                    incVelo += dVelocity;
+                    remainingCount--;
+                }
+                else
+                    break;
+            }
+
+            // Add a new batch
+            synchronized (particleListLock) {
+                ParticleBatch pb = new ParticleBatch(pList);
+                particleBatchList.add(pb);
+                pb.start();
+
+                // TEMP PRINT TODO: REMOVE AFTER TEST
+                System.out.println("ADDED NEW BATCH with particle num: " + pb.getNumParticles());
+                // END TEMP PRINT
+
+            }
+        }
+
+        // TEMP PRINT TODO: REMOVE AFTER TEST
+        System.out.println("THREAD NUM START");
+        for (ParticleBatch batch: particleBatchList)
+            System.out.println("Thread particle num: " + batch.getNumParticles());
+        System.out.println("THREAD NUM END");
+        // END TEMP PRINT
+
+        // Sort list
+        Collections.sort(particleBatchList, new ParticleBatchComparator());
+
+        // Update particle system
+        particlePanel.repaint();
+    }
+
+    private void addParticles(int x, int y, double theta, double velocity) {
+        // Create array of particles
+        ArrayList<Particle> pList = new ArrayList<>();
+        pList.add(new Particle(x, y, velocity, theta, wallList));
+
+        // Add particle to an existing batch that is not full yet
+        if (!particleBatchList.isEmpty() && !particleBatchList.get(0).isFull()) {
+            for (ParticleBatch pb : particleBatchList) {
+                if (pb.isFull())
+                    break;
+                else
+                    synchronized (particleListLock) {
+                        pb.addNewParticles(pList);
+
+                        // TEMP PRINT TODO: REMOVE AFTER TEST
+                        System.out.println("ADDED to existing batch particle num: " + pList.size());
+                        // END TEMP PRINT
+                    }
+            }
+        }
+        else {
+            synchronized (particleListLock) {
+                ParticleBatch pb = new ParticleBatch(pList);
+                particleBatchList.add(pb);
+                pb.start();
+
+                // TEMP PRINT TODO: REMOVE AFTER TEST
+                System.out.println("ADDED NEW BATCH with particle num: " + pb.getNumParticles());
+                // END TEMP PRINT
+
+            }
+        }
+
+        // TEMP PRINT TODO: REMOVE AFTER TEST
+        System.out.println("THREAD NUM START");
+        for (ParticleBatch batch: particleBatchList)
+            System.out.println("Thread particle num: " + batch.getNumParticles());
+        System.out.println("THREAD NUM END");
+        // END TEMP PRINT
+
+
+        // Sort list
+        Collections.sort(particleBatchList, new ParticleBatchComparator());
+
         // Update particle system
         particlePanel.repaint();
     }
@@ -552,21 +747,6 @@ public class ParticleSystemApp extends JFrame {
         inputPanel.add(textField);
     }
 
-    private void addParticles(int x, int y, double theta, double velocity) {
-        //TODO: Change it to create one batch thread of one
-
-        // Create and add particle
-        synchronized (particleListLock) {
-            Particle particle = new Particle(x, y, velocity, theta, wallList);
-            particleList.add(particle);
-            //particle.start();
-            executor.submit(particle);
-        }
-
-        // Update particle system
-        particlePanel.repaint();
-    }
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             ParticleSystemApp app = new ParticleSystemApp();
@@ -574,3 +754,11 @@ public class ParticleSystemApp extends JFrame {
         });
     }
 }
+
+class ParticleBatchComparator implements Comparator<ParticleBatch> {
+    @Override
+    public int compare(ParticleBatch batch1, ParticleBatch batch2) {
+        return Integer.compare(batch1.getNumParticles(), batch2.getNumParticles());
+    }
+}
+
