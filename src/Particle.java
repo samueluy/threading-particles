@@ -52,7 +52,7 @@ public class Particle {
 
         // Collision detection and response
         for (Wall wall : walls) {
-            if (wall.intersects(x, y, 7)) {
+            if (wall.intersects(x, y, size)) {
                 //System.out.println("INTERSECTS!");
                 checkInclineCollision(wall);
                 try {
@@ -75,29 +75,25 @@ public class Particle {
     }
 
     void checkInclineCollision(Wall wall){
-        float dx_, dy_;
-        // (dx, dy) is relative position of ball with respect to wall midpoints
-        float dx = x - wall.getMidX();
-        float dy = y - wall.getMidY();
+        // Calculate the particle's velocity
+        float vX = (float) (velocity * Math.cos(theta));
+        float vY = (float) (velocity * Math.sin(theta));
 
-        float cosine = (float) Math.cos(wall.getRotAngle());
-        float sine = (float) Math.sin(wall.getRotAngle());
+        // Calculate the normal vector of the wall
+        float cosine = (float) Math.cos(wall.getRotAngle() + Math.PI / 2);
+        float sine = (float) Math.sin(wall.getRotAngle() + Math.PI / 2);
 
-        //System.out.println("Cosine :" + cosine);
-        //System.out.println("sine :" + sine);
+        // Calculate the dot product of velocity and wall normal
+        float dotProduct = vX * cosine+ vY * sine;
 
-        // Rotate relative position and velocity
-        dx_ = cosine * dx + sine * dy;
-        dy_ = cosine * dy - sine * dx;
+        // Calculate the reflected velocity components
+        float reflectedVx = vX - 2 * dotProduct * cosine;
+        float reflectedVy = vX - 2 * dotProduct * sine;
 
-        // Rotate back to restore original coordinate axis
-        float dx_new = cosine * dx_ - sine * dy_;
-        float dy_new = cosine * dy_ + sine * dx_;
-
-        // Update particle properties
-        x = (int) (wall.getMidX() + dx_new);
-        y = (int) (wall.getMidY() + dy_new);
-        theta = 2 * wall.getRotAngle() - theta;
+        // update particle location and angle
+        x += 2 * reflectedVx;
+        y += 2 * reflectedVy;
+        theta = Math.atan2(reflectedVy, reflectedVx);
     }
 
 

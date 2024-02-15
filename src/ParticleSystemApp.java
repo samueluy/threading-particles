@@ -34,7 +34,7 @@ public class ParticleSystemApp extends JFrame {
     private int frames;
     public ParticleSystemApp() {
         setTitle("Particle System App");
-        setSize(1700, 790); // The window itself
+        setSize(1700, 760); // The window itself
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         setResizable(false);
@@ -421,15 +421,11 @@ public class ParticleSystemApp extends JFrame {
         particleBatchList.add(tempPb);
 
         // testwalls
-        //wallList.add(new Wall(100, 700, 600, 100)); //Test angle facing bottom left and top right WORKING
-        //wallList.add(new Wall(600, 10, 1200, 700)); // Test angle facing bottom right and top left WORKING
+        wallList.add(new Wall(100, 700, 600, 100)); //Test angle facing bottom left and top right WORKING
         wallList.add(new Wall(600, 10, 1200, 700)); // Test angle facing bottom right and top left WORKING
-        //wallList.add(new Wall(600, 10, 600, 700)); //Straight vertical WORKING
-        //wallList.add(new Wall(100, 300, 1000, 300)); //Straight horizontal WORKING
-        //wallList.add(new Wall(100, 300, 1000, 300)); //Straight horizontal WORKING
+        wallList.add(new Wall(600, 10, 600, 700)); //Straight vertical WORKING
+        wallList.add(new Wall(100, 300, 1000, 300)); //Straight horizontal WORKING
 
-        // Start a thread to update FPS
-        //new Thread(this::runFPSCounter).start();
         // Start gamelogic thread
         new Thread(this::gameLoop).start();
 
