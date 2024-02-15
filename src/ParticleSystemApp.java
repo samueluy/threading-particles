@@ -28,6 +28,10 @@ public class ParticleSystemApp extends JFrame {
     private final int MAX_VELOCITY = 30;
 
     private final int MAX_LOAD = 10;
+
+    private long lastUpdateTime;
+
+    private int frames;
     public ParticleSystemApp() {
         setTitle("Particle System App");
         setSize(1700, 790); // The window itself
@@ -59,6 +63,31 @@ public class ParticleSystemApp extends JFrame {
 
                 // Update FPS label position dynamically
                 fpsLabel.setBounds(getWidth() - 110, getHeight() - 30, 100, 20);
+
+                // Run a function after paintComponent is done
+                SwingUtilities.invokeLater(this::runFPSCounter);
+            }
+
+            private void runFPSCounter() {
+                long now = System.currentTimeMillis();
+                long elapsed = now - lastUpdateTime;
+
+                frames++;
+
+                if (elapsed >= 500) { // 0.5 seconds
+                    final int fps = (int) ((frames * 1000) / elapsed);
+                    SwingUtilities.invokeLater(() -> fpsLabel.setText("FPS: " + Math.min(fps, 144)));
+
+                    frames = 0;
+                    lastUpdateTime = now;
+                }
+
+                try {
+                    Thread.sleep(Math.max(1, (1000 / 144) - (System.currentTimeMillis() - now)));
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+
             }
         };
         particlePanel.setPreferredSize(new Dimension(1280, 720)); // Main -> width is - input panel width
@@ -400,7 +429,7 @@ public class ParticleSystemApp extends JFrame {
         //wallList.add(new Wall(100, 300, 1000, 300)); //Straight horizontal WORKING
 
         // Start a thread to update FPS
-        new Thread(this::runFPSCounter).start();
+        //new Thread(this::runFPSCounter).start();
         // Start gamelogic thread
         new Thread(this::gameLoop).start();
 
@@ -409,12 +438,15 @@ public class ParticleSystemApp extends JFrame {
     private void gameLoop() {
         final double maxFramesPerSecond = 144.0;
         final long frameTime = (long) (1000 / maxFramesPerSecond);
+        lastUpdateTime = System.currentTimeMillis();
+        frames = 0;
 
         while (true) {
             long startTime = System.currentTimeMillis();
 
             // Your game update and render logic here
             SwingUtilities.invokeLater(particlePanel::repaint);
+
 
             long endTime = System.currentTimeMillis();
             long deltaTime = endTime - startTime;
@@ -431,31 +463,7 @@ public class ParticleSystemApp extends JFrame {
     }
 
 
-    private void runFPSCounter() {
-        long lastUpdateTime = System.currentTimeMillis();
-        int frames = 0;
 
-        while (true) {
-            long now = System.currentTimeMillis();
-            long elapsed = now - lastUpdateTime;
-
-            frames++;
-
-            if (elapsed >= 500) { // 0.5 seconds
-                final int fps = (int) ((frames * 1000) / elapsed);
-                SwingUtilities.invokeLater(() -> fpsLabel.setText("FPS: " + Math.min(fps, 144)));
-
-                frames = 0;
-                lastUpdateTime = now;
-            }
-
-            try {
-                Thread.sleep(Math.max(1, (1000 / 144) - (System.currentTimeMillis() - now)));
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        }
-    }
 
     // Helper methods for batch particle addition
     private void addParticlesWithConstantVelocityAndAngle(int n, int startX, int endX, int startY, int endY, double theta, double velocity) {
