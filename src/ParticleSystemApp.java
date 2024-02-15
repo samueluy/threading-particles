@@ -80,7 +80,7 @@ public class ParticleSystemApp extends JFrame {
         submitWallButton = new JButton("Add Wall");
 
         // Batch options to the input panel
-        String[] batchOptionsArray = {"Default", "Constant Velocity and Angle", "Constant Start Point and Angle", "Constant Start Point and Velocity"};
+        String[] batchOptionsArray = {"Default", "Constant Velocity and Angle", "Constant Start Point and Velocity", "Constant Start Point and Angle"};
         JComboBox<String> batchOptions = new JComboBox<>(batchOptionsArray);
         batchOptions.setSelectedItem("Default"); // Set default option
         inputPanel.add(new JLabel("Options"));
@@ -123,7 +123,7 @@ public class ParticleSystemApp extends JFrame {
                     inputPanel.add(submitParticleButton);
                     inputPanel.add(submitWallButton);
                     break;
-                case "Constant Start Point and Angle":
+                case "Constant Start Point and Velocity":
                     inputPanel.add(new JLabel("Options"));
                     inputPanel.add(batchOptions);
 
@@ -142,7 +142,7 @@ public class ParticleSystemApp extends JFrame {
                     inputPanel.add(submitParticleButton);
                     inputPanel.add(submitWallButton);
                     break;
-                case "Constant Start Point and Velocity":
+                case "Constant Start Point and Angle":
                     inputPanel.add(new JLabel("Options"));
                     inputPanel.add(batchOptions);
 
@@ -258,7 +258,7 @@ public class ParticleSystemApp extends JFrame {
 
                         addParticlesWithConstantVelocityAndAngle(n, startX, endX, startY, endY, theta, velocity);
                         break;
-                    case 2: // Constant Start Point and Angle
+                    case 2: // Constant Start Point and Velocity
                         // Retrieve start angle and end angle
                         n = Integer.parseInt(nField.getText());
                         x = Integer.parseInt(startXField.getText());
@@ -288,7 +288,7 @@ public class ParticleSystemApp extends JFrame {
 
                         addParticlesWithConstantStartPointAndAngle(n, x, y, velocity, startTheta, endTheta);
                         break;
-                    case 3: // Constant Start Point and Velocity
+                    case 3: // Constant Start Point and Angle
                         // Retrieve start velocity and end velocity
                         n = Integer.parseInt(nField.getText());
                         x = Integer.parseInt(startXField.getText());

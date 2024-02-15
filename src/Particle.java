@@ -81,13 +81,12 @@ public class Particle extends Thread{
         float cosine = (float) Math.cos(wall.getRotAngle());
         float sine = (float) Math.sin(wall.getRotAngle());
 
-        System.out.println("Cosine :" + cosine);
-        System.out.println("sine :" + sine);
+        //System.out.println("Cosine :" + cosine);
+        //System.out.println("sine :" + sine);
 
         // Rotate relative position and velocity
         dx_ = cosine * dx + sine * dy;
         dy_ = cosine * dy - sine * dx;
-
 
         // Rotate back to restore original coordinate axis
         float dx_new = cosine * dx_ - sine * dy_;
