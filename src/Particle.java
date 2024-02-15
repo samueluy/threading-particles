@@ -73,6 +73,7 @@ public class Particle extends Thread{
     }
 
     void checkInclineCollision(Wall wall){
+        float dx_, dy_;
         // (dx, dy) is relative position of ball with respect to wall midpoints
         float dx = x - wall.getMidX();
         float dy = y - wall.getMidY();
@@ -80,15 +81,13 @@ public class Particle extends Thread{
         float cosine = (float) Math.cos(wall.getRotAngle());
         float sine = (float) Math.sin(wall.getRotAngle());
 
+        System.out.println("Cosine :" + cosine);
+        System.out.println("sine :" + sine);
+
         // Rotate relative position and velocity
-        float dx_ = cosine * dx + sine * dy;
-        float dy_ = cosine * dy - sine * dx;
+        dx_ = cosine * dx + sine * dy;
+        dy_ = cosine * dy - sine * dx;
 
-
-        // Check for collision with both sides of the wall
-        if (Math.abs(dx_) < (wall.getWidth()) && y > wall.getY1() && y < wall.getY2()) {
-            dx_ = (float) (Math.signum(dx_) * (wall.getWidth() / 2));
-        }
 
         // Rotate back to restore original coordinate axis
         float dx_new = cosine * dx_ - sine * dy_;

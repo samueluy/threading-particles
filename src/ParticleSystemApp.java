@@ -56,6 +56,7 @@ public class ParticleSystemApp extends JFrame {
 
         // Input Panel
         inputPanel = new JPanel();
+        inputPanel.setPreferredSize(new Dimension(404, 720));
         inputPanel.setLayout(new GridLayout(13, 2));
 
 
@@ -365,16 +366,24 @@ public class ParticleSystemApp extends JFrame {
 
         // test particles
         Particle particle1 = new Particle(100, 100, 12, 0, wallList);
-        Particle particle2 = new Particle(150, 150, 8, 0, wallList);
+        Particle particle2 = new Particle(400, 150, 8, 60, wallList);
+        Particle particle3 = new Particle(600, 150, 8, 45, wallList);
+        Particle particle4 = new Particle(1000, 100, 8, 80, wallList);
         particleList.add(particle1);
         particleList.add(particle2);
+        particleList.add(particle3);
+        particleList.add(particle4);
         particle1.start();
         particle2.start();
+        particle3.start();
+        particle4.start();
 
 
         // testwalls
-        //wallList.add(new Wall(200, 300, 700, 70));
-        wallList.add(new Wall(200, 700, 700, 70));
+        //wallList.add(new Wall(100, 700, 600, 100)); //Test angle facing bottom left and top right WORKING
+        //wallList.add(new Wall(600, 10, 1200, 700)); // Test angle facing bottom right and top left WORKING
+        //wallList.add(new Wall(600, 10, 600, 700)); //Straight vertical WORKING
+        wallList.add(new Wall(100, 300, 1000, 300)); //Straight horizontal WORKING
 
         // Start a thread to update FPS
         new Thread(this::runFPSCounter).start();
