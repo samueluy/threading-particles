@@ -29,26 +29,11 @@ public class Particle {
         this.walls = walls;
     }
 
-//    public void run() {
-//        while(true)
-//        {
-//            update();
-//
-//            try
-//            {
-//                Thread.sleep(20);
-//            }
-//            catch(Exception e){}
-//        }
-//    }
-
 
     public void update() {
         // Update position based on velocity and direction
         x += velocity * Math.cos(theta);
         y += velocity * Math.sin(theta);
-
-
 
         // Collision detection and response
         for (Wall wall : walls) {
