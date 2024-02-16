@@ -20,9 +20,13 @@ In partial completion of the course **Distributed Computing (STDISCM)**.
 - Java Development Kit (JDK) 8 or above.
 
 ## How to Run
-- 1. Compile the Java file:
+- 1. Clone this repository
+```git clone https://github.com/samueluy/threading-particles.git```
+- 2. Navigate to the *src* directory 
+```cd threading-particles/src```
+- 3. Compile the Java file:
 ```javac ParticleSystemApp.java```
-- 2. Execute the compiled class:
+- 4. Execute the compiled class:
 ```java ParticleSystemApp```
 
 ## Usage
