@@ -487,7 +487,7 @@ public class ParticleSystemApp extends JFrame {
                     batch.addNewParticles(pList);
 
                     // TEMP PRINT TODO: REMOVE AFTER TEST
-                    System.out.println("ADDED to existing batch particle num: " + pList.size());
+                    //System.out.println("ADDED to existing batch particle num: " + pList.size());
                     // END TEMP PRINT
                 }
             }
@@ -516,7 +516,7 @@ public class ParticleSystemApp extends JFrame {
 
 
                 // TEMP PRINT TODO: REMOVE AFTER TEST
-                System.out.println("ADDED NEW BATCH with particle num: " + pb.getNumParticles());
+                //System.out.println("ADDED NEW BATCH with particle num: " + pb.getNumParticles());
                 // END TEMP PRINT
             }
         }
@@ -568,7 +568,7 @@ public class ParticleSystemApp extends JFrame {
                     batch.addNewParticles(pList);
 
                     // TEMP PRINT TODO: REMOVE AFTER TEST
-                    System.out.println("ADDED to existing batch particle num: " + pList.size());
+                    //System.out.println("ADDED to existing batch particle num: " + pList.size());
                     // END TEMP PRINT
                 }
             }
@@ -596,7 +596,7 @@ public class ParticleSystemApp extends JFrame {
 
 
                 // TEMP PRINT TODO: REMOVE AFTER TEST
-                System.out.println("ADDED NEW BATCH with particle num: " + pb.getNumParticles());
+                //System.out.println("ADDED NEW BATCH with particle num: " + pb.getNumParticles());
                 // END TEMP PRINT
             }
         }

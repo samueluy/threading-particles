@@ -69,25 +69,22 @@ public class ParticleSystemApp extends JFrame {
             private void runFPSCounter() {
                 long now = System.currentTimeMillis();
                 long elapsed = now - lastUpdateTime;
-
                 frames++;
 
                 if (elapsed >= 500) { // 0.5 seconds
                     final int fps = (int) ((frames * 1000) / elapsed);
                     SwingUtilities.invokeLater(() -> fpsLabel.setText("FPS: " + Math.min(fps, 144)));
-
                     frames = 0;
                     lastUpdateTime = now;
                 }
-
                 try {
                     Thread.sleep(Math.max(1, (1000 / 144) - (System.currentTimeMillis() - now)));
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-
             }
         };
+
         particlePanel.setPreferredSize(new Dimension(1280, 720)); // Main -> width is - input panel width
         particlePanel.setBackground(Color.BLACK);
         add(particlePanel, BorderLayout.CENTER);
@@ -724,29 +721,24 @@ public class ParticleSystemApp extends JFrame {
         pList.add(new Particle(x, y, velocity, theta, wallList));
 
         // Add particle to an existing batch that is not full yet
-        if (!particleBatchList.isEmpty() && !particleBatchList.get(0).isFull()) {
+        if (!particleBatchList.isEmpty() &&
+                !particleBatchList.get(0).isFull()) {
             for (ParticleBatch pb : particleBatchList) {
                 if (pb.isFull())
                     break;
                 else
                     synchronized (particleListLock) {
                         pb.addNewParticles(pList);
-
-                        // TEMP PRINT TODO: REMOVE AFTER TEST
-                        //System.out.println("ADDED to existing batch particle num: " + pList.size());
-                        // END TEMP PRINT
                     }
             }
-        } else {
+        }
+
+        else {
             synchronized (particleListLock) {
                 ParticleBatch pb = new ParticleBatch();
                 particleBatchList.add(pb);
                 pb.start();
                 pb.addNewParticles(pList);
-
-                // TEMP PRINT TODO: REMOVE AFTER TEST
-                //System.out.println("ADDED NEW BATCH with particle num: " + pb.getNumParticles());
-                // END TEMP PRINT
             }
         }
 

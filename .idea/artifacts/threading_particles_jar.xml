@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="threading-particles:jar">
+    <output-path>$PROJECT_DIR$/out</output-path>
+    <root id="archive" name="threading-particles.jar">
+      <element id="module-output" name="threading-particles" />
+    </root>
+  </artifact>
+</component>

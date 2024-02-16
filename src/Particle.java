@@ -29,7 +29,6 @@ public class Particle {
         this.walls = walls;
     }
 
-
     public void update() {
         // Update position based on velocity and direction
         x += velocity * Math.cos(theta);
@@ -38,7 +37,6 @@ public class Particle {
         // Collision detection and response
         for (Wall wall : walls) {
             if (wall.intersects(x, y, size)) {
-                //System.out.println("INTERSECTS!");
                 checkInclineCollision(wall);
                 try {
                     Thread.sleep(10); // Sleep for specified time
@@ -58,7 +56,6 @@ public class Particle {
             y = Math.max(0, Math.min(y, SCREEN_HEIGHT)); // Keep within bounds
         }
     }
-
     void checkInclineCollision(Wall wall){
         // Calculate the particle's velocity
         float vX = (float) (velocity * Math.cos(theta));
